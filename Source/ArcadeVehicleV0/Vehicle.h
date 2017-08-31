@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Engine.h"
 #include "Components/BoxComponent.h"
 #include "Vehicle.generated.h"
 
@@ -17,6 +18,9 @@ public:
 	AVehicle();
 
 	UPROPERTY(EditAnywhere)
+		UCameraComponent* MyCamera;
+
+	UPROPERTY(EditAnywhere)
 		UBoxComponent* Collider;
 	UPROPERTY(EditAnywhere)
 		USceneComponent* FrontLeftSpring;
@@ -28,6 +32,16 @@ public:
 		USceneComponent* BackRightSpring;
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* Mesh;
+	UPROPERTY(EditAnywhere)
+		FHitResult FL_Hit;
+	UPROPERTY(EditAnywhere)
+		FHitResult FR_Hit;
+	UPROPERTY(EditAnywhere)
+		FHitResult BL_Hit;
+	UPROPERTY(EditAnywhere)
+		FHitResult BR_Hit;
+	UPROPERTY(EditAnywhere,Category = "Suspension")
+		float SuspensionLength;
 
 protected:
 	// Called when the game starts or when spawned

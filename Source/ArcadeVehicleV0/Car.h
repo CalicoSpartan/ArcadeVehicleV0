@@ -7,16 +7,16 @@
 #include "Engine.h"
 #include "Wheel.h"
 #include "Components/BoxComponent.h"
-#include "Vehicle.generated.h"
+#include "Car.generated.h"
 
 UCLASS()
-class ARCADEVEHICLEV0_API AVehicle : public APawn
+class ARCADEVEHICLEV0_API ACar : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AVehicle();
+	ACar();
 
 	UPROPERTY(EditAnywhere)
 		TArray<class UWheel*> Wheels;
@@ -137,7 +137,7 @@ public:
 		float WheelRadius;
 
 
-	UPROPERTY(EditAnywhere,Category = "Suspension")
+	UPROPERTY(EditAnywhere, Category = "Suspension")
 		float SuspensionLength;
 	UPROPERTY(EditAnywhere, Category = "Suspension")
 		float SuspensionForceMultiplier;
@@ -145,13 +145,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
-	
+
+
 };

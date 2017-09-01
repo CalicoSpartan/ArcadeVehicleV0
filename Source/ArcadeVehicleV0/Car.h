@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Engine.h"
-#include "Wheel.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Car.generated.h"
 
@@ -18,58 +18,49 @@ public:
 	// Sets default values for this pawn's properties
 	ACar();
 
-	UPROPERTY(EditAnywhere)
-		TArray<class UWheel*> Wheels;
-	UPROPERTY(EditAnywhere)
-		class UWheel* Wheel1;
-	UPROPERTY(EditAnywhere)
-		class UWheel* Wheel2;
-	UPROPERTY(EditAnywhere)
-		class UWheel* Wheel3;
-	UPROPERTY(EditAnywhere)
-		class UWheel* Wheel4;
+
 
 	UPROPERTY(EditAnywhere)
 		UCameraComponent* MyCamera;
 
 	UPROPERTY(EditAnywhere)
 		UBoxComponent* Collider;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,Category = "FrontLeft")
 		USceneComponent* FrontLeftSpring;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		USceneComponent* FrontRightSpring;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		USceneComponent* BackLeftSpring;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		USceneComponent* BackRightSpring;
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* Mesh;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		FHitResult FL_Hit;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,Category = "FrontRight")
 		FHitResult FR_Hit;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		FHitResult BL_Hit;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		FHitResult BR_Hit;
 
 
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_SpringForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_DamperForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_SpringConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_DamperConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_RestLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_PreviousLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_CurrentLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontLeft")
 		float FL_SpringVelocity;
 
 
@@ -77,70 +68,70 @@ public:
 
 
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_SpringForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_DamperForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_SpringConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_DamperConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_RestLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_PreviousLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_CurrentLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "FrontRight")
 		float FR_SpringVelocity;
 
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_SpringForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_DamperForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_SpringConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_DamperConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_RestLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_PreviousLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_CurrentLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackRight")
 		float BR_SpringVelocity;
 
 
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_SpringForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_DamperForce;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_SpringConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_DamperConstant;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_RestLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_PreviousLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_CurrentLength;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BackLeft")
 		float BL_SpringVelocity;
 
 
 
 	UPROPERTY(EditAnywhere, Category = "Wheel")
 		float WheelRadius;
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float AccelForce = 20000.0f;
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float DecelForce = 20000.0f;
 
 
-	UPROPERTY(EditAnywhere, Category = "Suspension")
-		float SuspensionLength;
-	UPROPERTY(EditAnywhere, Category = "Suspension")
-		float SuspensionForceMultiplier;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -148,6 +139,12 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+
+	UFUNCTION()
+		void Accelerate(float Value);
+	UFUNCTION()
+		void Decelerate(float Value);
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

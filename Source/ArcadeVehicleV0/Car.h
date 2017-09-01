@@ -33,6 +33,8 @@ public:
 		USceneComponent* BackLeftSpring;
 	UPROPERTY(EditAnywhere, Category = "BackRight")
 		USceneComponent* BackRightSpring;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		USceneComponent* CarThrottleForceLocation;
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* Mesh;
 	UPROPERTY(EditAnywhere, Category = "FrontLeft")
@@ -130,7 +132,10 @@ public:
 		float AccelForce = 20000.0f;
 	UPROPERTY(EditAnywhere, Category = "Speed")
 		float DecelForce = 20000.0f;
-
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float TurnForce = 20000.0f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float FrictionForce = 2000.0f;
 
 protected:
 	// Called when the game starts or when spawned
@@ -145,6 +150,8 @@ public:
 		void Accelerate(float Value);
 	UFUNCTION()
 		void Decelerate(float Value);
+	UFUNCTION()
+		void Turn(float Value);
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

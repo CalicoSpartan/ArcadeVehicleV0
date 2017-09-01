@@ -136,6 +136,8 @@ public:
 		float TurnForce = 20000.0f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		float FrictionForce = 2000.0f;
+	UPROPERTY(EditAnywhere)
+		bool IsAccelerating = false;
 
 protected:
 	// Called when the game starts or when spawned

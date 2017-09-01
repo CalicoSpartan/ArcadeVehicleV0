@@ -56,12 +56,29 @@ void ACar::Tick(float DeltaTime)
 	float DotProduct =  FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
 	
 	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + test, FColor::Red, false, 0.2f);
-	if (DotProduct < 0.94)
+
+	float AnglePercent = 1.0f - (DotProduct / .94f);
+	int32 SpeedMPH = UKismetMathLibrary::Round(GetVelocity().Size() / 20.0f);
+	UE_LOG(LogClass, Log, TEXT("Speed: %d MPH"), SpeedMPH);
+	if (Collider->IsSimulatingPhysics())
 	{
-		float percent1 = DotProduct / .94f;
-		float percent2 = 1.0f - percent1;
-		UE_LOG(LogClass, Log, TEXT("AngleStrength: %f"), percent2);
-		Collider->AddForce(-GetVelocity().GetSafeNormal() * FrictionForce * percent2 * GetVelocity().Size());
+		Collider->AddForce(-GetVelocity().GetSafeNormal() * FrictionForce * AnglePercent * GetVelocity().Size());
+	}
+	if (SpeedMPH == 0.0f)
+	{
+		Collider->SetPhysicsAngularVelocity(FVector(Collider->GetPhysicsAngularVelocity().X, Collider->GetPhysicsAngularVelocity().Y, 0));
+		Collider->BodyInstance.bLockZRotation = true;
+	}
+	else
+	{
+		Collider->BodyInstance.bLockZRotation = false;
+	}
+	if (IsAccelerating == false)
+	{
+		if (Collider->IsSimulatingPhysics())
+		{
+			Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * GetVelocity().Size());
+		}
 	}
 	//Collider->AddImpulse(test * FrictionForce);
 	FCollisionQueryParams QueryParams;
@@ -133,15 +150,27 @@ void ACar::Accelerate(float Value)
 {
 	if (FL_Hit.ImpactNormal != FVector::ZeroVector)
 	{
+		if (Value > 0.0f)
+		{
+			IsAccelerating = true;
+			FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
+			Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+		}
+		else
+		{
+			IsAccelerating = false;
+		}
 		
-		FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
-		Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+
 		
 	}
 }
 void ACar::Turn(float Value)
 {
-	Collider->AddTorque(FVector(0, 0, TurnForce * Value));
+	if (GetVelocity().Size() / 20.0f > 5.0f)
+	{
+		Collider->AddTorque(FVector(0, 0, TurnForce * Value));
+	}
 }
 
 // Called to bind functionality to input

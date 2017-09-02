@@ -20,8 +20,7 @@ public:
 
 
 
-	UPROPERTY(EditAnywhere)
-		UCameraComponent* MyCamera;
+
 
 	UPROPERTY(EditAnywhere)
 		UBoxComponent* Collider;
@@ -35,6 +34,8 @@ public:
 		USceneComponent* BackRightSpring;
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		USceneComponent* CarThrottleForceLocation;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		USceneComponent* COMcomponent;
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* Mesh;
 	UPROPERTY(EditAnywhere, Category = "FrontLeft")
@@ -136,8 +137,22 @@ public:
 		float TurnForce = 20000.0f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		float FrictionForce = 2000.0f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float DriveFriction = 2000.0f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float HandBrakeFriction = 2000.0f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float BASEAngularDamping = 5.0f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float TURNAngularDamping = 0.5f;
 	UPROPERTY(EditAnywhere)
 		bool IsAccelerating = false;
+	UPROPERTY(EditAnywhere)
+		bool IsGrounded = false;
+	UPROPERTY(EditAnywhere)
+		bool IsTurning = false;
+	UPROPERTY(EditAnywhere)
+		bool bUsingHandBrake = false;
 
 protected:
 	// Called when the game starts or when spawned

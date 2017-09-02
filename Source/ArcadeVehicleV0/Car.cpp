@@ -14,9 +14,8 @@ ACar::ACar()
 	Collider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
 
 	RootComponent = Collider;
-	MyCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("MyCamera"));
-	MyCamera->SetupAttachment(Collider);
 
+	Collider->SetAngularDamping(BASEAngularDamping);
 
 
 
@@ -33,7 +32,9 @@ ACar::ACar()
 	BackRightSpring->SetupAttachment(Collider);
 	CarThrottleForceLocation = CreateDefaultSubobject<USceneComponent>(TEXT("CarThrottleForceLocation"));
 	CarThrottleForceLocation->SetupAttachment(Collider);
-
+	COMcomponent = CreateDefaultSubobject<USceneComponent>(TEXT("COMcomponent"));
+	COMcomponent->SetupAttachment(Collider);
+	Collider->SetCenterOfMass(COMcomponent->GetComponentLocation());
 
 
 }
@@ -42,7 +43,11 @@ ACar::ACar()
 void ACar::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	Collider->SetSimulatePhysics(true);
+	
+	
+
 
 
 
@@ -52,41 +57,14 @@ void ACar::BeginPlay()
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//FVector test = UKismetMathLibrary::ProjectVectorOnToVector(GetVelocity().GetSafeNormal(), GetActorRightVector()).GetSafeNormal();
-	float DotProduct =  FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
-	
-	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + test, FColor::Red, false, 0.2f);
-
-	float AnglePercent = 1.0f - (DotProduct / .94f);
-	int32 SpeedMPH = UKismetMathLibrary::Round(GetVelocity().Size() / 20.0f);
-	UE_LOG(LogClass, Log, TEXT("Speed: %d MPH"), SpeedMPH);
-	if (Collider->IsSimulatingPhysics())
-	{
-		Collider->AddForce(-GetVelocity().GetSafeNormal() * FrictionForce * AnglePercent * GetVelocity().Size());
-	}
-	if (SpeedMPH == 0.0f)
-	{
-		Collider->SetPhysicsAngularVelocity(FVector(Collider->GetPhysicsAngularVelocity().X, Collider->GetPhysicsAngularVelocity().Y, 0));
-		Collider->BodyInstance.bLockZRotation = true;
-	}
-	else
-	{
-		Collider->BodyInstance.bLockZRotation = false;
-	}
-	if (IsAccelerating == false)
-	{
-		if (Collider->IsSimulatingPhysics())
-		{
-			Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * GetVelocity().Size());
-		}
-	}
+	IsGrounded = false;
 	//Collider->AddImpulse(test * FrictionForce);
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
 	if (GetWorld()->LineTraceSingleByChannel(FL_Hit, FrontLeftSpring->GetComponentLocation(), FrontLeftSpring->GetComponentLocation() + GetActorUpVector() * -(FL_RestLength + WheelRadius), ECollisionChannel::ECC_Visibility, QueryParams))
 	{
 	
-		
+		IsGrounded = true;
 		FL_PreviousLength = FL_CurrentLength;
 		FL_CurrentLength = FL_RestLength - (FL_Hit.Distance - WheelRadius);
 		FL_SpringVelocity = (FL_CurrentLength - FL_PreviousLength) / DeltaTime;
@@ -98,7 +76,7 @@ void ACar::Tick(float DeltaTime)
 	}
 	if (GetWorld()->LineTraceSingleByChannel(FR_Hit, FrontRightSpring->GetComponentLocation(), FrontRightSpring->GetComponentLocation() + GetActorUpVector() * -(FR_RestLength + WheelRadius), ECollisionChannel::ECC_Visibility, QueryParams))
 	{
-	
+		IsGrounded = true;
 		FR_PreviousLength = FR_CurrentLength;
 		FR_CurrentLength = FR_RestLength - (FR_Hit.Distance - WheelRadius);
 		FR_SpringVelocity = (FR_CurrentLength - FR_PreviousLength) / DeltaTime;
@@ -111,7 +89,7 @@ void ACar::Tick(float DeltaTime)
 	if (GetWorld()->LineTraceSingleByChannel(BL_Hit, BackLeftSpring->GetComponentLocation(), BackLeftSpring->GetComponentLocation() + GetActorUpVector() * -(BL_RestLength + WheelRadius), ECollisionChannel::ECC_Visibility, QueryParams))
 	{
 	
-
+		IsGrounded = true;
 		BL_PreviousLength = BL_CurrentLength;
 		BL_CurrentLength = BL_RestLength - (BL_Hit.Distance - WheelRadius);
 		BL_SpringVelocity = (BL_CurrentLength - BL_PreviousLength) / DeltaTime;
@@ -124,7 +102,7 @@ void ACar::Tick(float DeltaTime)
 	if (GetWorld()->LineTraceSingleByChannel(BR_Hit, BackRightSpring->GetComponentLocation(), BackRightSpring->GetComponentLocation() + GetActorUpVector() * -(BR_RestLength + WheelRadius), ECollisionChannel::ECC_Visibility, QueryParams))
 	{
 	
-
+		IsGrounded = true;
 		BR_PreviousLength = BR_CurrentLength;
 		BR_CurrentLength = BR_RestLength - (BR_Hit.Distance - WheelRadius);
 		BR_SpringVelocity = (BR_CurrentLength - BR_PreviousLength) / DeltaTime;
@@ -132,7 +110,50 @@ void ACar::Tick(float DeltaTime)
 		BR_DamperForce = BR_DamperConstant * BR_SpringVelocity;
 		Collider->AddForceAtLocation(GetActorUpVector() * BR_SpringForce + BR_DamperForce, BackRightSpring->GetComponentLocation());
 	}
-	
+
+
+	if (IsGrounded == true)
+	{
+		if (bUsingHandBrake)
+		{
+			FrictionForce = HandBrakeFriction;
+		}
+		else
+		{
+			FrictionForce = DriveFriction;
+		}
+
+		//FVector test = UKismetMathLibrary::ProjectVectorOnToVector(GetVelocity().GetSafeNormal(), GetActorRightVector()).GetSafeNormal();
+		float DotProduct = FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
+
+		//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + test, FColor::Red, false, 0.2f);
+
+		float AnglePercent = 1.0f - (DotProduct / .94f);
+		int32 SpeedMPH = UKismetMathLibrary::Round(GetVelocity().Size() / 20.0f);
+		
+		if (Collider->IsSimulatingPhysics())
+		{
+			Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * FrictionForce * AnglePercent);
+		}
+		/*
+		if (SpeedMPH == 0.0f)
+		{
+		Collider->SetPhysicsAngularVelocity(FVector(Collider->GetPhysicsAngularVelocity().X, Collider->GetPhysicsAngularVelocity().Y, 0));
+		Collider->BodyInstance.bLockZRotation = true;
+		}
+		else
+		{
+		Collider->BodyInstance.bLockZRotation = false;
+		}
+		*/
+		if (IsAccelerating == false)
+		{
+			if (Collider->IsSimulatingPhysics())
+			{
+				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass());
+			}
+		}
+	}
 }
 
 void ACar::Decelerate(float Value)
@@ -167,10 +188,21 @@ void ACar::Accelerate(float Value)
 }
 void ACar::Turn(float Value)
 {
-	if (GetVelocity().Size() / 20.0f > 5.0f)
+	if (Value != 0.0)
 	{
+		Collider->SetAngularDamping(TURNAngularDamping);
+	}
+	else
+	{
+		Collider->SetAngularDamping(BASEAngularDamping);
+	}
+	
+	if (IsGrounded)
+	{
+
 		Collider->AddTorque(FVector(0, 0, TurnForce * Value));
 	}
+	
 }
 
 // Called to bind functionality to input

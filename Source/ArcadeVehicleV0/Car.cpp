@@ -59,6 +59,15 @@ void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	IsGrounded = false;
+	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
+	if (CurrentSpeed < MaxTurnSpeed)
+	{
+		TurnStrengthPercentage = CurrentSpeed / MaxTurnSpeed;
+	}
+	else
+	{
+		TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
+	}
 	//Collider->AddImpulse(test * FrictionForce);
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
@@ -111,11 +120,12 @@ void ACar::Tick(float DeltaTime)
 		BR_DamperForce = BR_DamperConstant * BR_SpringVelocity;
 		Collider->AddForceAtLocation(GetActorUpVector() * BR_SpringForce + BR_DamperForce, BackRightSpring->GetComponentLocation());
 	}
+	UE_LOG(LogClass, Log, TEXT("Speed: %d"), FPlatformMath::RoundToInt(CurrentSpeed));
 
 
 	if (IsGrounded == true)
 	{
-
+		
 
 		//FVector test = UKismetMathLibrary::ProjectVectorOnToVector(GetVelocity().GetSafeNormal(), GetActorRightVector()).GetSafeNormal();
 		float DotProduct = -1.0f * FrictionForce * FVector::DotProduct(GetActorRightVector(), GetVelocity());
@@ -127,7 +137,7 @@ void ACar::Tick(float DeltaTime)
 		//UE_LOG(LogClass, Log, TEXT("Angular Velocity: %f"), Collider->GetPhysicsAngularVelocity().Z);
 		float Dir = FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
 		
-		if (Dir > 0.9f && FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < 80.0f && bUsingHandBrake == false && FrictionForce == HandBrakeFriction)
+		if (Dir > StraightenOutANGLEValue && FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < StraightenOutTURNValue && bUsingHandBrake == false && FrictionForce == HandBrakeFriction && IsTurning == false)
 		{
 			FrictionForce = DriveFriction;
 			UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
@@ -144,6 +154,15 @@ void ACar::Tick(float DeltaTime)
 		{
 			Collider->AddForce(GetActorRightVector() * DotProduct);
 		}
+		if (FrictionForce == HandBrakeFriction)
+		{
+			Collider->SetLinearDamping(DRIFTLinearDamping);
+		}
+		else
+		{
+			Collider->SetLinearDamping(BASELinearDamping);
+		}
+
 		/*
 		if (SpeedMPH == 0.0f)
 		{
@@ -186,7 +205,10 @@ void ACar::Accelerate(float Value)
 		{
 			IsAccelerating = true;
 			FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
-			Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+			if (CurrentSpeed < MaxSpeed)
+			{
+				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+			}
 		}
 		else
 		{
@@ -199,19 +221,30 @@ void ACar::Accelerate(float Value)
 }
 void ACar::Turn(float Value)
 {
-	if (Value != 0.0)
-	{
-		Collider->SetAngularDamping(TURNAngularDamping);
-	}
-	else
-	{
-		Collider->SetAngularDamping(BASEAngularDamping);
-	}
+
+
 	
 	if (IsGrounded)
 	{
-
-		Collider->AddTorque(FVector(0, 0, TurnForce * Value));
+		if (Value != 0.0f)
+		{
+			IsTurning = true;
+			if (FrictionForce != HandBrakeFriction)
+			{
+				Collider->SetAngularDamping(TURNAngularDamping);
+				Collider->AddTorque(FVector(0, 0, TurnForce * Value * TurnStrengthPercentage));
+			}
+			else
+			{
+				Collider->SetAngularDamping(DRIFTAngularDamping);
+				Collider->AddTorque(FVector(0, 0, TurnForce * Value *  HandBrakeTurnScale));
+			}
+		}
+		else
+		{
+			IsTurning = false;
+			Collider->SetAngularDamping(BASEAngularDamping);
+		}
 	}
 	
 }

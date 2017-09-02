@@ -145,6 +145,28 @@ public:
 		float BASEAngularDamping = 5.0f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		float TURNAngularDamping = 0.5f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float DRIFTAngularDamping = 0.5f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float BASELinearDamping = 5.0f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float DRIFTLinearDamping = 0.5f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float StraightenOutTURNValue = 0.9f;
+	UPROPERTY(EditAnywhere, Category = "Handling")
+		float StraightenOutANGLEValue = 0.9f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float MaxTurnSpeed = 60.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float TurnStrengthPercentage = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float HandBrakeTurnScale = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float CurrentSpeed = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float MaxSpeed = 200.0f;
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float SpeedDivisionScale = 0.0f;
 	UPROPERTY(EditAnywhere)
 		bool IsAccelerating = false;
 	UPROPERTY(EditAnywhere)

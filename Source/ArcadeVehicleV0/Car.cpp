@@ -58,6 +58,10 @@ void ACar::BeginPlay()
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FRotator rot = GetActorRotation();
+	FVector vel = rot.UnrotateVector(GetVelocity());
+	UE_LOG(LogClass, Log, TEXT("Speed: %d"), FPlatformMath::RoundToInt(vel.X / SpeedDivisionScale));
 	IsGrounded = false;
 	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
 	if (CurrentSpeed < MaxTurnSpeed)
@@ -67,6 +71,10 @@ void ACar::Tick(float DeltaTime)
 	else
 	{
 		TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
+	}
+	if (FPlatformMath::RoundToFloat(TurnStrengthPercentage) == 0.0f)
+	{
+		TurnStrengthPercentage = 0.0f;
 	}
 	//Collider->AddImpulse(test * FrictionForce);
 	FCollisionQueryParams QueryParams;
@@ -120,7 +128,7 @@ void ACar::Tick(float DeltaTime)
 		BR_DamperForce = BR_DamperConstant * BR_SpringVelocity;
 		Collider->AddForceAtLocation(GetActorUpVector() * BR_SpringForce + BR_DamperForce, BackRightSpring->GetComponentLocation());
 	}
-	UE_LOG(LogClass, Log, TEXT("Speed: %d"), FPlatformMath::RoundToInt(CurrentSpeed));
+	
 
 
 	if (IsGrounded == true)
@@ -208,6 +216,10 @@ void ACar::Accelerate(float Value)
 			if (CurrentSpeed < MaxSpeed)
 			{
 				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+			}
+			else
+			{
+				//UE_LOG(LogClass, Log, TEXT("MaxSpeed"));
 			}
 		}
 		else

@@ -154,6 +154,9 @@ public:
 	UPROPERTY(EditAnywhere)
 		bool bUsingHandBrake = false;
 
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -169,6 +172,10 @@ public:
 		void Decelerate(float Value);
 	UFUNCTION()
 		void Turn(float Value);
+	UFUNCTION()
+		void ApplyHandBrake();
+	UFUNCTION()
+		void ReleaseHandBrake();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

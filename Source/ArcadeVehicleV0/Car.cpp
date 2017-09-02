@@ -35,6 +35,7 @@ ACar::ACar()
 	COMcomponent = CreateDefaultSubobject<USceneComponent>(TEXT("COMcomponent"));
 	COMcomponent->SetupAttachment(Collider);
 	Collider->SetCenterOfMass(COMcomponent->GetComponentLocation());
+	FrictionForce = DriveFriction;
 
 
 }
@@ -45,7 +46,7 @@ void ACar::BeginPlay()
 	Super::BeginPlay();
 	
 	Collider->SetSimulatePhysics(true);
-	
+	FrictionForce = DriveFriction;
 	
 
 
@@ -114,26 +115,34 @@ void ACar::Tick(float DeltaTime)
 
 	if (IsGrounded == true)
 	{
-		if (bUsingHandBrake)
-		{
-			FrictionForce = HandBrakeFriction;
-		}
-		else
-		{
-			FrictionForce = DriveFriction;
-		}
+
 
 		//FVector test = UKismetMathLibrary::ProjectVectorOnToVector(GetVelocity().GetSafeNormal(), GetActorRightVector()).GetSafeNormal();
-		float DotProduct = FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
+		float DotProduct = -1.0f * FrictionForce * FVector::DotProduct(GetActorRightVector(), GetVelocity());
 
 		//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + test, FColor::Red, false, 0.2f);
 
-		float AnglePercent = 1.0f - (DotProduct / .94f);
-		int32 SpeedMPH = UKismetMathLibrary::Round(GetVelocity().Size() / 20.0f);
+		//float AnglePercent = 1.0f - (DotProduct / .94f);
+		//int32 SpeedMPH = UKismetMathLibrary::Round(GetVelocity().Size() / 20.0f);
+		//UE_LOG(LogClass, Log, TEXT("Angular Velocity: %f"), Collider->GetPhysicsAngularVelocity().Z);
+		float Dir = FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
 		
+		if (Dir > 0.9f && FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < 80.0f && bUsingHandBrake == false && FrictionForce == HandBrakeFriction)
+		{
+			FrictionForce = DriveFriction;
+			UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
+			/*
+			if (!FMath::IsNearlyEqual(FrictionForce, DriveFriction, 2.0f))
+			{
+				UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
+				FrictionForce = FMath::Lerp(FrictionForce, DriveFriction, DeltaTime);
+			}
+			*/
+			
+		}
 		if (Collider->IsSimulatingPhysics())
 		{
-			Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * FrictionForce * AnglePercent);
+			Collider->AddForce(GetActorRightVector() * DotProduct);
 		}
 		/*
 		if (SpeedMPH == 0.0f)
@@ -146,6 +155,7 @@ void ACar::Tick(float DeltaTime)
 		Collider->BodyInstance.bLockZRotation = false;
 		}
 		*/
+		/*
 		if (IsAccelerating == false)
 		{
 			if (Collider->IsSimulatingPhysics())
@@ -153,6 +163,7 @@ void ACar::Tick(float DeltaTime)
 				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass());
 			}
 		}
+		*/
 	}
 }
 
@@ -171,7 +182,7 @@ void ACar::Accelerate(float Value)
 {
 	if (FL_Hit.ImpactNormal != FVector::ZeroVector)
 	{
-		if (Value > 0.0f)
+		if (Value != 0.0f)
 		{
 			IsAccelerating = true;
 			FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
@@ -205,6 +216,17 @@ void ACar::Turn(float Value)
 	
 }
 
+void ACar::ApplyHandBrake()
+{
+	FrictionForce = HandBrakeFriction;
+	bUsingHandBrake = true;
+}
+void ACar::ReleaseHandBrake()
+{
+	bUsingHandBrake = false;
+	
+}
+
 // Called to bind functionality to input
 void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -212,5 +234,7 @@ void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("Throttle", this, &ACar::Accelerate);
 	PlayerInputComponent->BindAxis("Brake", this, &ACar::Decelerate);
 	PlayerInputComponent->BindAxis("Steer", this, &ACar::Turn);
+	PlayerInputComponent->BindAction("HandBrake",IE_Pressed, this, &ACar::ApplyHandBrake);
+	PlayerInputComponent->BindAction("HandBrake", IE_Released, this, &ACar::ReleaseHandBrake);
 }
 

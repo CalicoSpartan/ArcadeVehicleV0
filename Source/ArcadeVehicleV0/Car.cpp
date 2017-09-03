@@ -64,18 +64,18 @@ void ACar::Tick(float DeltaTime)
 	UE_LOG(LogClass, Log, TEXT("Speed: %d"), FPlatformMath::RoundToInt(vel.X / SpeedDivisionScale));
 	IsGrounded = false;
 	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
-	if (CurrentSpeed < MaxTurnSpeed)
+	TurnToSpeedPercentage = CurrentSpeed * TurnToSpeed;
+	TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
+	if (TurnStrengthPercentage <= 0.15f)
 	{
-		TurnStrengthPercentage = CurrentSpeed / MaxTurnSpeed;
+		TurnStrengthPercentage = 0.15f;
 	}
-	else
-	{
-		TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
-	}
+	/*
 	if (FPlatformMath::RoundToFloat(TurnStrengthPercentage) == 0.0f)
 	{
 		TurnStrengthPercentage = 0.0f;
 	}
+	*/
 	//Collider->AddImpulse(test * FrictionForce);
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
@@ -200,7 +200,7 @@ void ACar::Decelerate(float Value)
 	{
 		
 		FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
-		Collider->AddImpulseAtLocation(SurfaceDirection * DecelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+		Collider->AddImpulseAtLocation(SurfaceDirection * DecelForce * Value, GetActorLocation());
 	}
 
 
@@ -215,7 +215,7 @@ void ACar::Accelerate(float Value)
 			FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
 			if (CurrentSpeed < MaxSpeed)
 			{
-				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, CarThrottleForceLocation->GetComponentLocation());
+				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, GetActorLocation());
 			}
 			else
 			{
@@ -244,7 +244,7 @@ void ACar::Turn(float Value)
 			if (FrictionForce != HandBrakeFriction)
 			{
 				Collider->SetAngularDamping(TURNAngularDamping);
-				Collider->AddTorque(FVector(0, 0, TurnForce * Value * TurnStrengthPercentage));
+				Collider->AddTorque(FVector(0, 0, TurnForce * Value * TurnToSpeedPercentage * TurnStrengthPercentage));
 			}
 			else
 			{

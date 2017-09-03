@@ -156,7 +156,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		float StraightenOutANGLEValue = 0.9f;
 	UPROPERTY(EditAnywhere, Category = "Steering")
-		float MaxTurnSpeed = 60.0f;
+		float TurnToSpeedPercentage = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float TurnToSpeed = 0.3f;
+
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float TurnStrengthPercentage = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Steering")

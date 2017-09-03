@@ -159,6 +159,17 @@ public:
 		float TurnToSpeedPercentage = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float TurnToSpeed = 0.3f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float LowSpeedSteerAngle = 20.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float CurrentSpeedSteerAngle = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float HighSpeedSteerAngle = 3.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float SpeedFactor = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float TurnAxisValue = 0.0f;
+
 
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float TurnStrengthPercentage = 1.0f;

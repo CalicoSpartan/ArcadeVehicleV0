@@ -66,6 +66,7 @@ void ACar::Tick(float DeltaTime)
 	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
 	TurnToSpeedPercentage = CurrentSpeed * TurnToSpeed;
 	TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
+	Collider->AddTorque(FVector(0, 0, (CurrentSpeed/2) * TurnForce * CurrentSpeedSteerAngle));
 	if (TurnStrengthPercentage <= 0.15f)
 	{
 		TurnStrengthPercentage = 0.15f;
@@ -216,6 +217,7 @@ void ACar::Accelerate(float Value)
 			if (CurrentSpeed < MaxSpeed)
 			{
 				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, GetActorLocation());
+				
 			}
 			else
 			{
@@ -233,18 +235,22 @@ void ACar::Accelerate(float Value)
 }
 void ACar::Turn(float Value)
 {
+	TurnAxisValue = Value;
 
-
+	SpeedFactor = (GetVelocity().Size() / SpeedDivisionScale) / MaxSpeed;
+	CurrentSpeedSteerAngle = FMath::Lerp(LowSpeedSteerAngle, HighSpeedSteerAngle, SpeedFactor);
+	CurrentSpeedSteerAngle *= Value;
 	
 	if (IsGrounded)
 	{
+		
 		if (Value != 0.0f)
 		{
 			IsTurning = true;
 			if (FrictionForce != HandBrakeFriction)
 			{
 				Collider->SetAngularDamping(TURNAngularDamping);
-				Collider->AddTorque(FVector(0, 0, TurnForce * Value * TurnToSpeedPercentage * TurnStrengthPercentage));
+				
 			}
 			else
 			{

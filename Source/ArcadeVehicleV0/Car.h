@@ -148,9 +148,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		float DRIFTAngularDamping = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
-		float BASELinearDamping = 5.0f;
+		float BASESteerForce = 5.0f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
-		float DRIFTLinearDamping = 0.5f;
+		float DRIFTSteerForce = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
 		float StraightenOutTURNValue = 0.9f;
 	UPROPERTY(EditAnywhere, Category = "Handling")
@@ -169,6 +169,8 @@ public:
 		float SpeedFactor = 0.0f;
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float TurnAxisValue = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Speed")
+		float CurrentForwardSpeed = 0.0f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Steering")

@@ -61,16 +61,18 @@ void ACar::Tick(float DeltaTime)
 
 	FRotator rot = GetActorRotation();
 	FVector vel = rot.UnrotateVector(GetVelocity());
-	UE_LOG(LogClass, Log, TEXT("Speed: %d"), FPlatformMath::RoundToInt(vel.X / SpeedDivisionScale));
+	CurrentForwardSpeed = vel.X / SpeedDivisionScale;
+	//UE_LOG(LogClass, Log, TEXT("Speed: %f"), CurrentForwardSpeed);
+	
 	IsGrounded = false;
 	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
 	TurnToSpeedPercentage = CurrentSpeed * TurnToSpeed;
 	TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
-	Collider->AddTorque(FVector(0, 0, (CurrentSpeed/2) * TurnForce * CurrentSpeedSteerAngle));
-	if (TurnStrengthPercentage <= 0.15f)
-	{
-		TurnStrengthPercentage = 0.15f;
-	}
+	
+	//if (TurnStrengthPercentage <= 0.15f)
+	//{
+	//	TurnStrengthPercentage = 0.15f;
+	//}
 	/*
 	if (FPlatformMath::RoundToFloat(TurnStrengthPercentage) == 0.0f)
 	{
@@ -146,31 +148,30 @@ void ACar::Tick(float DeltaTime)
 		//UE_LOG(LogClass, Log, TEXT("Angular Velocity: %f"), Collider->GetPhysicsAngularVelocity().Z);
 		float Dir = FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
 		
-		if (Dir > StraightenOutANGLEValue && FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < StraightenOutTURNValue && bUsingHandBrake == false && FrictionForce == HandBrakeFriction && IsTurning == false)
+		if (Dir > StraightenOutANGLEValue  && bUsingHandBrake == false && FrictionForce == HandBrakeFriction && IsTurning == false)
 		{
-			FrictionForce = DriveFriction;
-			UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
-			/*
-			if (!FMath::IsNearlyEqual(FrictionForce, DriveFriction, 2.0f))
+			UE_LOG(LogClass, Log, TEXT("Check 1"));
+			if (FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < StraightenOutTURNValue)
 			{
-				UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
-				FrictionForce = FMath::Lerp(FrictionForce, DriveFriction, DeltaTime);
+				UE_LOG(LogClass, Log, TEXT("Check 2"));
+
+				FrictionForce = DriveFriction;
+				//UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
+				/*
+				if (!FMath::IsNearlyEqual(FrictionForce, DriveFriction, 2.0f))
+				{
+					UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
+					FrictionForce = FMath::Lerp(FrictionForce, DriveFriction, DeltaTime);
+				}
+				*/
 			}
-			*/
-			
 		}
 		if (Collider->IsSimulatingPhysics())
 		{
-			Collider->AddForce(GetActorRightVector() * DotProduct);
+			Collider->AddForce(GetActorRightVector() * DotProduct );
+			Collider->AddTorque(FVector(0, 0, (CurrentSpeed / 2) * TurnForce * CurrentSpeedSteerAngle));
 		}
-		if (FrictionForce == HandBrakeFriction)
-		{
-			Collider->SetLinearDamping(DRIFTLinearDamping);
-		}
-		else
-		{
-			Collider->SetLinearDamping(BASELinearDamping);
-		}
+
 
 		/*
 		if (SpeedMPH == 0.0f)
@@ -240,28 +241,28 @@ void ACar::Turn(float Value)
 	SpeedFactor = (GetVelocity().Size() / SpeedDivisionScale) / MaxSpeed;
 	CurrentSpeedSteerAngle = FMath::Lerp(LowSpeedSteerAngle, HighSpeedSteerAngle, SpeedFactor);
 	CurrentSpeedSteerAngle *= Value;
-	
+	float StraightenForce = 1.0f * FrictionForce * FVector::DotProduct(GetActorRightVector(), GetVelocity());
 	if (IsGrounded)
 	{
 		
 		if (Value != 0.0f)
 		{
 			IsTurning = true;
-			if (FrictionForce != HandBrakeFriction)
+			if (bUsingHandBrake)
 			{
-				Collider->SetAngularDamping(TURNAngularDamping);
-				
+				TurnForce = DRIFTSteerForce;
 			}
 			else
 			{
-				Collider->SetAngularDamping(DRIFTAngularDamping);
-				Collider->AddTorque(FVector(0, 0, TurnForce * Value *  HandBrakeTurnScale));
+				TurnForce = BASESteerForce;
 			}
+
 		}
 		else
 		{
+			//Collider->AddForce(GetActorRightVector() * StraightenForce);
 			IsTurning = false;
-			Collider->SetAngularDamping(BASEAngularDamping);
+			//Collider->SetAngularDamping(BASEAngularDamping);
 		}
 	}
 	

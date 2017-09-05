@@ -201,7 +201,7 @@ void ACar::Tick(float DeltaTime)
 		{
 			if (Collider->IsSimulatingPhysics())
 			{
-				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass());
+				Collider->AddForce(-GetVelocity() * Collider->GetMass() * RollingBreakStrength);
 			}
 		}
 		
@@ -210,41 +210,40 @@ void ACar::Tick(float DeltaTime)
 
 void ACar::Decelerate(float Value)
 {
-	if (FL_Hit.ImpactNormal != FVector::ZeroVector)
-	{
+
 		
-		FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
-		Collider->AddImpulseAtLocation(SurfaceDirection * DecelForce * Value, GetActorLocation());
-	}
+	FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorRotation().UnrotateVector(GetVelocity()), FL_Hit.ImpactNormal).GetSafeNormal();
+	Collider->AddForce(GetVelocity() * Collider->GetMass() * BreakStrength * Value);
+	//Collider->AddImpulseAtLocation(SurfaceDirection * DecelForce * Value, GetActorLocation());
+
 
 
 }
 void ACar::Accelerate(float Value)
 {
-	if (FL_Hit.ImpactNormal != FVector::ZeroVector)
+
+	if (Value != 0.0f)
 	{
-		if (Value != 0.0f)
+		IsAccelerating = true;
+		FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
+		if (CurrentSpeed < MaxSpeed)
 		{
-			IsAccelerating = true;
-			FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
-			if (CurrentSpeed < MaxSpeed)
-			{
-				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, GetActorLocation());
+			Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, GetActorLocation());
 				
-			}
-			else
-			{
-				//UE_LOG(LogClass, Log, TEXT("MaxSpeed"));
-			}
 		}
 		else
 		{
-			IsAccelerating = false;
+			//UE_LOG(LogClass, Log, TEXT("MaxSpeed"));
 		}
+	}
+	else
+	{
+		IsAccelerating = false;
+	}
 		
 
 		
-	}
+
 }
 void ACar::Turn(float Value)
 {

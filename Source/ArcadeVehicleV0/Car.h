@@ -172,8 +172,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Speed")
 		float CurrentForwardSpeed = 0.0f;
 
-
-
+	UPROPERTY(EditAnywhere, Category = "Breaking")
+		float BreakStrength = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Breaking")
+		float RollingBreakStrength = 1.0f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Steering")

@@ -68,6 +68,8 @@ void ACar::Tick(float DeltaTime)
 	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
 	TurnToSpeedPercentage = CurrentSpeed * TurnToSpeed;
 	TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
+	DriftToSpeedPercentage = CurrentSpeed * DriftToSpeed;
+	DriftStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
 	
 	//if (TurnStrengthPercentage <= 0.15f)
 	//{
@@ -145,12 +147,12 @@ void ACar::Tick(float DeltaTime)
 
 		//float AnglePercent = 1.0f - (DotProduct / .94f);
 		//int32 SpeedMPH = UKismetMathLibrary::Round(GetVelocity().Size() / 20.0f);
-		//UE_LOG(LogClass, Log, TEXT("Angular Velocity: %f"), Collider->GetPhysicsAngularVelocity().Z);
+		
 		float Dir = FMath::Abs(FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal()));
 		
 		if (Dir > StraightenOutANGLEValue  && bUsingHandBrake == false && FrictionForce == HandBrakeFriction && IsTurning == false)
 		{
-			UE_LOG(LogClass, Log, TEXT("Check 1"));
+			//UE_LOG(LogClass, Log, TEXT("Check 1"));
 			if (FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < StraightenOutTURNValue)
 			{
 				UE_LOG(LogClass, Log, TEXT("Check 2"));
@@ -168,8 +170,18 @@ void ACar::Tick(float DeltaTime)
 		}
 		if (Collider->IsSimulatingPhysics())
 		{
-			Collider->AddForce(GetActorRightVector() * DotProduct );
-			Collider->AddTorque(FVector(0, 0, (CurrentSpeed / 2) * TurnForce * CurrentSpeedSteerAngle));
+			Collider->AddForce(GetActorRightVector() * DotProduct);
+			Collider->AddForce(GetActorRightVector() * DotProduct);
+			if (FrictionForce != HandBrakeFriction)
+			{
+				
+				Collider->AddTorque(FVector(0, 0, (CurrentSpeed / 2) * TurnForce * CurrentSpeedSteerAngle));
+			}
+			else
+			{
+				
+				Collider->AddTorque(FVector(0, 0, (CurrentSpeed / 2) * TurnForce * CurrentSpeedDriftSteerAngle));
+			}
 		}
 
 
@@ -184,7 +196,7 @@ void ACar::Tick(float DeltaTime)
 		Collider->BodyInstance.bLockZRotation = false;
 		}
 		*/
-		/*
+		
 		if (IsAccelerating == false)
 		{
 			if (Collider->IsSimulatingPhysics())
@@ -192,7 +204,7 @@ void ACar::Tick(float DeltaTime)
 				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass());
 			}
 		}
-		*/
+		
 	}
 }
 
@@ -241,7 +253,9 @@ void ACar::Turn(float Value)
 	SpeedFactor = (GetVelocity().Size() / SpeedDivisionScale) / MaxSpeed;
 	CurrentSpeedSteerAngle = FMath::Lerp(LowSpeedSteerAngle, HighSpeedSteerAngle, SpeedFactor);
 	CurrentSpeedSteerAngle *= Value;
-	float StraightenForce = 1.0f * FrictionForce * FVector::DotProduct(GetActorRightVector(), GetVelocity());
+	CurrentSpeedDriftSteerAngle = FMath::Lerp(LowSpeedDriftSteerAngle, HighSpeedDriftSteerAngle, SpeedFactor);
+	CurrentSpeedDriftSteerAngle *= Value;
+	//float StraightenForce = 1.0f * FrictionForce * FVector::DotProduct(GetActorRotation().UnrotateVector(GetVelocity()), Collider->GetPhysicsAngularVelocity());
 	if (IsGrounded)
 	{
 		
@@ -260,6 +274,9 @@ void ACar::Turn(float Value)
 		}
 		else
 		{
+			if (FrictionForce != HandBrakeFriction) {
+				Collider->AddTorque(FVector(0, 0, -Collider->GetPhysicsAngularVelocity().Z  * (CurrentSpeed / 2) * TurnForce));
+			}
 			//Collider->AddForce(GetActorRightVector() * StraightenForce);
 			IsTurning = false;
 			//Collider->SetAngularDamping(BASEAngularDamping);

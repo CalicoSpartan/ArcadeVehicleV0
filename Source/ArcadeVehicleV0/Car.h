@@ -172,9 +172,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Speed")
 		float CurrentForwardSpeed = 0.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Breaking")
+	UPROPERTY(EditAnywhere, Category = "Braking")
 		float BreakStrength = 1.0f;
-	UPROPERTY(EditAnywhere, Category = "Breaking")
+	UPROPERTY(EditAnywhere, Category = "Braking")
 		float RollingBreakStrength = 1.0f;
 
 
@@ -191,6 +191,28 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float DriftStrengthPercentage = 1.0f;
 
+
+
+	UPROPERTY(EditAnywhere, Category = "Braking")
+		float DriftToBrakePercentage = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Braking")
+		float DriftToBrake = 0.3f;
+	UPROPERTY(EditAnywhere, Category = "Braking")
+		float LowDriftBrakeStrength = 20.0f;
+	UPROPERTY(EditAnywhere, Category = "Braking")
+		float CurrentDriftBrakeStrength = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Braking")
+		float HighDriftBrakeStrength = 3.0f;
+	UPROPERTY(EditAnywhere, Category = "Braking")
+		float DriftBreakPercentage = 1.0f;
+
+
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float HighDriftAccelStrength = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float LowDriftAccelStrength = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float CurrentDriftAccelStrength = 1.0f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Steering")
@@ -211,6 +233,8 @@ public:
 		bool IsTurning = false;
 	UPROPERTY(EditAnywhere)
 		bool bUsingHandBrake = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+		bool bIsDrifting = false;
 
 
 

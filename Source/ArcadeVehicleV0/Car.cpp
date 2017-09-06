@@ -155,7 +155,7 @@ void ACar::Tick(float DeltaTime)
 			//UE_LOG(LogClass, Log, TEXT("Check 1"));
 			if (FMath::Abs(Collider->GetPhysicsAngularVelocity().Z) < StraightenOutTURNValue)
 			{
-				UE_LOG(LogClass, Log, TEXT("Check 2"));
+				//UE_LOG(LogClass, Log, TEXT("Check 2"));
 
 				FrictionForce = DriveFriction;
 				//UE_LOG(LogClass, Log, TEXT("Should Straighten. DotProduct: %f , AngularVelocity: %f"), Dir, Collider->GetPhysicsAngularVelocity().Z);
@@ -170,7 +170,7 @@ void ACar::Tick(float DeltaTime)
 		}
 		if (Collider->IsSimulatingPhysics())
 		{
-			Collider->AddForce(GetActorRightVector() * DotProduct);
+			
 			Collider->AddForce(GetActorRightVector() * DotProduct);
 			if (FrictionForce != HandBrakeFriction)
 			{
@@ -184,18 +184,33 @@ void ACar::Tick(float DeltaTime)
 			}
 		}
 
-
-		/*
-		if (SpeedMPH == 0.0f)
+		if (FrictionForce == HandBrakeFriction)
 		{
-		Collider->SetPhysicsAngularVelocity(FVector(Collider->GetPhysicsAngularVelocity().X, Collider->GetPhysicsAngularVelocity().Y, 0));
-		Collider->BodyInstance.bLockZRotation = true;
+			float DotProduct = FMath::Abs(FVector::DotProduct(GetActorRightVector(), GetVelocity().GetSafeNormal()));
+			//UE_LOG(LogClass, Log, TEXT("Angle:  %f"), DotProduct);
+			if (DotProduct > 0.3f)
+			{
+				bIsDrifting = true;
+				
+				float AngleFactor = DotProduct / 1.0f;
+				
+				CurrentDriftBrakeStrength = FMath::Lerp(LowDriftBrakeStrength, HighDriftBrakeStrength, AngleFactor);
+				CurrentDriftAccelStrength = FMath::Lerp(LowDriftAccelStrength, HighDriftAccelStrength, AngleFactor);
+				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * CurrentDriftBrakeStrength);
+				UE_LOG(LogClass, Log, TEXT("AccelStrength:  %f"), CurrentDriftAccelStrength);
+			}
+			else
+			{
+				bIsDrifting = false;
+				CurrentDriftAccelStrength = 1.0f;
+			}
 		}
 		else
 		{
-		Collider->BodyInstance.bLockZRotation = false;
+			CurrentDriftAccelStrength = 1.0f;
+			bIsDrifting = false;
 		}
-		*/
+
 		
 		if (IsAccelerating == false)
 		{
@@ -206,6 +221,10 @@ void ACar::Tick(float DeltaTime)
 		}
 		
 	}
+	else
+	{
+		bIsDrifting = false;
+	}
 }
 
 void ACar::Decelerate(float Value)
@@ -213,7 +232,7 @@ void ACar::Decelerate(float Value)
 
 		
 	FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorRotation().UnrotateVector(GetVelocity()), FL_Hit.ImpactNormal).GetSafeNormal();
-	Collider->AddForce(GetVelocity() * Collider->GetMass() * BreakStrength * Value);
+	Collider->AddForce(GetVelocity() * Collider->GetMass() * BreakStrength * Value * FrictionForce);
 	//Collider->AddImpulseAtLocation(SurfaceDirection * DecelForce * Value, GetActorLocation());
 
 
@@ -228,7 +247,16 @@ void ACar::Accelerate(float Value)
 		FVector SurfaceDirection = UKismetMathLibrary::ProjectVectorOnToPlane(GetActorForwardVector(), FL_Hit.ImpactNormal).GetSafeNormal();
 		if (CurrentSpeed < MaxSpeed)
 		{
-			Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, GetActorLocation());
+			if (bIsDrifting)
+			{
+
+
+				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value * CurrentDriftAccelStrength, GetActorLocation());
+			}
+			else
+			{
+				Collider->AddImpulseAtLocation(SurfaceDirection * AccelForce * Value, GetActorLocation());
+			}
 				
 		}
 		else

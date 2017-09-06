@@ -164,6 +164,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float CurrentSpeedSteerAngle = 0.0f;
 	UPROPERTY(EditAnywhere, Category = "Steering")
+		float LastKnownSteerAngle = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Steering")
 		float HighSpeedSteerAngle = 3.0f;
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float SpeedFactor = 0.0f;
@@ -213,6 +215,12 @@ public:
 		float LowDriftAccelStrength = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Drifting")
 		float CurrentDriftAccelStrength = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float HighDriftCounterSteerStrength = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float LowDriftCounterSteerStrength = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float CurrentDriftCounterSteerStrength = 0.0f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Steering")

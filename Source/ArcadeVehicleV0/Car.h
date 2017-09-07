@@ -221,6 +221,8 @@ public:
 		float LowDriftCounterSteerStrength = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Drifting")
 		float CurrentDriftCounterSteerStrength = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float MinimumDriftingAngle = 0.3f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Steering")

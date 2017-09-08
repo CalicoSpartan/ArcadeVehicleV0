@@ -183,7 +183,12 @@ void ACar::Tick(float DeltaTime)
 				Collider->AddTorque(FVector(0, 0, (CurrentSpeed / 2) * TurnForce * CurrentSpeedDriftSteerAngle));
 				if (LastKnownSteerAngle != NULL)
 				{
+					//UE_LOG(LogClass, Log, TEXT("LastKnown: %f"), LastKnownSteerAngle);
 					Collider->AddTorque(FVector(0, 0, (CurrentSpeed / 2) * TurnForce * LastKnownSteerAngle));
+				}
+				else
+				{
+					//UE_LOG(LogClass, Log, TEXT("LastKnownAngle is NULL"));
 				}
 			}
 		}
@@ -193,31 +198,29 @@ void ACar::Tick(float DeltaTime)
 		//UE_LOG(LogClass, Log, TEXT("Velocity:  %f"), FVector2D(GetVelocity().X,GetVelocity().Y).Size());
 		float AngleFactor = RightDotProduct / 1.0f;
 		//UE_LOG(LogClass, Log, TEXT("DotProduct:  %f"), RightDotProduct);
-		if (RightDotProduct > MinimumDriftingAngle && FVector2D(GetVelocity().X, GetVelocity().Y).Size() > 215.0f)
+		if (FrictionForce == HandBrakeFriction)
 		{
-			FrictionForce = HandBrakeFriction;
-
-			CurrentDriftBrakeStrength = FMath::Lerp(LowDriftBrakeStrength, HighDriftBrakeStrength, AngleFactor);
-			CurrentDriftAccelStrength = FMath::Lerp(LowDriftAccelStrength, HighDriftAccelStrength, AngleFactor);
-			CurrentDriftCounterSteerStrength = FMath::Lerp(LowDriftCounterSteerStrength, HighDriftCounterSteerStrength, AngleFactor);
-			Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * CurrentDriftBrakeStrength);
-			
-	
-		}
-		else
-		{
-			if (FrictionForce == HandBrakeFriction)
+			UE_LOG(LogClass, Log, TEXT("DotProduct:  %f"), RightDotProduct);
+			if (RightDotProduct > MinimumDriftingAngle)
 			{
-				bIsDrifting = false;
-				LastKnownSteerAngle = NULL;
-				CurrentDriftAccelStrength = FMath::Lerp(CurrentDriftAccelStrength, 1.0f, AngleFactor);
+				bIsDrifting = true;
+				CurrentDriftBrakeStrength = FMath::Lerp(LowDriftBrakeStrength, HighDriftBrakeStrength, AngleFactor);
+				CurrentDriftAccelStrength = FMath::Lerp(LowDriftAccelStrength, HighDriftAccelStrength, AngleFactor);
+				CurrentDriftCounterSteerStrength = FMath::Lerp(LowDriftCounterSteerStrength, HighDriftCounterSteerStrength, AngleFactor);
+				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * CurrentDriftBrakeStrength);
 			}
 			else
 			{
-				CurrentDriftAccelStrength = FMath::Lerp(CurrentDriftAccelStrength, 1.0f, AngleFactor);
 				bIsDrifting = false;
+				CurrentDriftAccelStrength = FMath::Lerp(CurrentDriftAccelStrength, 1.0f, AngleFactor);
 			}
 		}
+		else
+		{
+			bIsDrifting = false;
+			CurrentDriftAccelStrength = FMath::Lerp(CurrentDriftAccelStrength, 1.0f, AngleFactor);
+		}
+
 
 
 		
@@ -234,6 +237,7 @@ void ACar::Tick(float DeltaTime)
 	{
 		bIsDrifting = false;
 	}
+	
 }
 
 void ACar::Decelerate(float Value)
@@ -287,14 +291,17 @@ void ACar::Turn(float Value)
 	TurnAxisValue = Value;
 
 	SpeedFactor = (GetVelocity().Size() / SpeedDivisionScale) / MaxSpeed;
+
 	CurrentSpeedSteerAngle = FMath::Lerp(LowSpeedSteerAngle, HighSpeedSteerAngle, SpeedFactor);
 	CurrentSpeedSteerAngle *= Value;
 	CurrentSpeedDriftSteerAngle = FMath::Lerp(LowSpeedDriftSteerAngle, HighSpeedDriftSteerAngle, SpeedFactor);
 	CurrentSpeedDriftSteerAngle *= Value;
-	if (FrictionForce == HandBrakeFriction && Value != 0.0f)
+	if (FrictionForce == HandBrakeFriction && CurrentSpeedDriftSteerAngle != 0.0f)
 	{
 		LastKnownSteerAngle = CurrentSpeedDriftSteerAngle * CurrentDriftCounterSteerStrength;
+		
 	}
+	
 	//float StraightenForce = 1.0f * FrictionForce * FVector::DotProduct(GetActorRotation().UnrotateVector(GetVelocity()), Collider->GetPhysicsAngularVelocity());
 	if (IsGrounded)
 	{

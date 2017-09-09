@@ -190,23 +190,26 @@ public:
 		float CurrentSpeedDriftSteerAngle = 0.0f;
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float HighSpeedDriftSteerAngle = 3.0f;
-	UPROPERTY(EditAnywhere, Category = "Steering")
-		float DriftStrengthPercentage = 1.0f;
 
 
 
-	UPROPERTY(EditAnywhere, Category = "Braking")
-		float DriftToBrakePercentage = 1.0f;
-	UPROPERTY(EditAnywhere, Category = "Braking")
-		float DriftToBrake = 0.3f;
-	UPROPERTY(EditAnywhere, Category = "Braking")
+
+
+
+	UPROPERTY(EditAnywhere, Category = "Drifting")
 		float LowDriftBrakeStrength = 20.0f;
-	UPROPERTY(EditAnywhere, Category = "Braking")
+	UPROPERTY(EditAnywhere, Category = "Drifting")
 		float CurrentDriftBrakeStrength = 0.0f;
-	UPROPERTY(EditAnywhere, Category = "Braking")
+	UPROPERTY(EditAnywhere, Category = "Drifting")
 		float HighDriftBrakeStrength = 3.0f;
-	UPROPERTY(EditAnywhere, Category = "Braking")
-		float DriftBreakPercentage = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float LowDriftAccelHelpStrength = 20.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float CurrentDriftAccelHelpStrength = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Drifting")
+		float HighDriftAccelHelpStrength = 3.0f;
+
 
 
 	UPROPERTY(EditAnywhere, Category = "Drifting")

@@ -68,8 +68,7 @@ void ACar::Tick(float DeltaTime)
 	CurrentSpeed = GetVelocity().Size() / SpeedDivisionScale;
 	TurnToSpeedPercentage = CurrentSpeed * TurnToSpeed;
 	TurnStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
-	DriftToSpeedPercentage = CurrentSpeed * DriftToSpeed;
-	DriftStrengthPercentage = 1.0f - CurrentSpeed / MaxSpeed;
+
 	
 	//if (TurnStrengthPercentage <= 0.15f)
 	//{
@@ -203,20 +202,33 @@ void ACar::Tick(float DeltaTime)
 			//UE_LOG(LogClass, Log, TEXT("AngleFactor:  %f"), AngleFactor);
 			if (RightDotProduct > MinimumDriftingAngle)
 			{
-				
+				float ForwardDotProduct = FVector::DotProduct(GetActorForwardVector(), GetVelocity().GetSafeNormal());
 				FVector LocalVelocity = GetActorRotation().UnrotateVector(GetVelocity().GetSafeNormal());
-				FVector SidewaysVelocity = FVector(0.0f, LocalVelocity.Y, 0.0f);
-				FRotator SidewaysVelocityRotation = SidewaysVelocity.Rotation();
-				FVector SidewaysVelocityDirection = SidewaysVelocityRotation.Vector();
-				UE_LOG(LogClass, Log, TEXT("LocalVelocity:  %s"), *LocalVelocity.ToString());
+				float Forwardfloat = (GetActorForwardVector() * FVector(1.0f, 1.0f, 0.0f)).GetSafeNormal().Rotation().Yaw;
+				float VelocityForward = (GetVelocity() * FVector(1.0f,1.0f,0.0f)).GetSafeNormal().Rotation().Yaw;
+				float ForwardDegrees = Forwardfloat - VelocityForward;
+				float RightDegrees = VelocityForward + 90.0f;
+				FVector RightDirection = FVector(FMath::Cos(FMath::DegreesToRadians(RightDegrees)), FMath::Sin(FMath::DegreesToRadians(RightDegrees)), 0.0f).GetSafeNormal();
+				//UE_LOG(LogClass, Log, TEXT("ForwardDegrees:  %f"), ForwardDegrees);
+				float DirMultiplier = 0.0f;
+				if (ForwardDegrees >= 0.0f)
+				{
+					DirMultiplier = 1.0f;
+				}
+				else
+				{
+					DirMultiplier = -1.0f;
+				}
 				
-				DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + SidewaysVelocityDirection.GetSafeNormal() * 500.0f, FColor::Red, true, 1.0f);
+				DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() +  RightDirection * DirMultiplier * 500.0f, FColor::Red, true, 0.2f);
 				//UE_LOG(LogClass, Log, TEXT("Drifting"));
 				bIsDrifting = true;
 				CurrentDriftBrakeStrength = FMath::Lerp(LowDriftBrakeStrength, HighDriftBrakeStrength, AngleFactor);
+				CurrentDriftAccelHelpStrength = FMath::Lerp(LowDriftAccelHelpStrength, HighDriftAccelHelpStrength, 1.0f - AngleFactor);
 				CurrentDriftAccelStrength = FMath::Lerp(LowDriftAccelStrength, HighDriftAccelStrength, AngleFactor);
 				CurrentDriftCounterSteerStrength = FMath::Lerp(LowDriftCounterSteerStrength, HighDriftCounterSteerStrength, AngleFactor);
 				Collider->AddForce(-GetVelocity().GetSafeNormal() * Collider->GetMass() * CurrentDriftBrakeStrength);
+				Collider->AddForce(RightDirection * DirMultiplier * Collider->GetMass() * CurrentDriftAccelHelpStrength);
 			}
 			else
 			{

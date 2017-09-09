@@ -175,9 +175,9 @@ public:
 		float CurrentForwardSpeed = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Braking")
-		float BreakStrength = 1.0f;
+		float BrakeStrength = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Braking")
-		float RollingBreakStrength = 1.0f;
+		float RollingBrakeStrength = 1.0f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Steering")

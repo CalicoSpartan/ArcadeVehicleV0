@@ -227,6 +227,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Drifting")
 		float MinimumDriftingAngle = 0.3f;
 
+	UPROPERTY(EditAnywhere, Category = "Steering")
+		float TractionControlValue = 20.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Steering")
 		float TurnStrengthPercentage = 1.0f;
@@ -248,6 +250,8 @@ public:
 		bool bUsingHandBrake = false;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		bool bIsDrifting = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool bDecelerating = false;
 
 
 
